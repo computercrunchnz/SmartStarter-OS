@@ -34,6 +34,7 @@ ehn = Pin(22, Pin.OUT)
 ec2 = Pin(26, Pin.OUT)
 ec3 = Pin(27, Pin.OUT)
 epf = Pin(28, Pin.OUT)
+led = Pin(25, Pin.OUT)
 
 e1m.value(0)
 e2m.value(0)
@@ -53,18 +54,7 @@ ic1.value(0)
 ic2.value(0)
 ic3.value(0)
 ipf.value(0)
-
-global sta
-global scr
-global sl
-global f1
-global f2
-global f3
-global rs
-global el
-global eh
-global lte
-global ibz
+led.value(0)
 
 stao = open("sta", "r")
 sta = stao.read(1)
@@ -108,6 +98,46 @@ lteo = open("lte", "r")
 lte = int(lteo.read())
 lteo.close()
 
+def timecurr():
+    tm = rtc.datetime()
+    year = tm[0]
+    month = tm[1]
+    day = tm[2]
+    hour = tm[4]
+    minute = tm[5]
+    second = tm[6]
+    lcd.move_to(0,1)
+    if hour < 10:
+        if minute < 10:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("<= Horn 0", hour, ":0", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("<= Horn 0", hour, ":0", minute, ":", second)
+                lcd.putstr(str(timed))
+        else:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("<= Horn 0", hour, ":", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("<= Horn 0", hour, ":", minute, ":", second)
+                lcd.putstr(str(timed))
+    else:
+        if minute < 10:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("<= Horn ", hour, ":0", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("<= Horn ", hour, ":0", minute, ":", second)
+                lcd.putstr(str(timed))
+        else:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("<= Horn ", hour, ":", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("<= Horn ", hour, ":", minute, ":", second)
+                lcd.putstr(str(timed))
+
 def bz():
     bzt = 0
     #while bzt = 0:#50
@@ -116,7 +146,98 @@ def bz():
         #buzz.value(0)
         #time.sleep(0.001)
         #bzt = bzt + 1
-    
+
+def c2():
+    global brd
+    global bru
+    global bld
+    global blu
+    global e1m
+    global e2m
+    global e3m
+    global e4m
+    global e5m
+    global ec1
+    global i1m
+    global i2m
+    global i3m
+    global i4m
+    global i5m
+    global buzz
+    global ic1
+    global ic2
+    global ic3
+    global ipf
+    global ehn
+    global ec2
+    global ec3
+    global epf
+    global led
+    global sta
+    global scr
+    global sl
+    global f1
+    global f2
+    global f3
+    global rs
+    global el
+    global eh
+    global lte
+    global ibz
+    global dns
+    while True:
+        time.sleep(0.2)
+        while scr == "Start":
+            time.sleep(0.2)
+            if bru.value() == True:
+                scr = "Race"
+                time.sleep(1)
+                e1m.value(0)
+                e2m.value(0)
+                e3m.value(0)
+                e4m.value(0)
+                e5m.value(0)
+                ec1.value(0)
+                ec2.value(0)
+                ec3.value(0)
+                epf.value(0)
+                i1m.value(0)
+                i2m.value(0)
+                i3m.value(0)
+                i4m.value(0)
+                i5m.value(0)
+                ic1.value(0)
+                ic2.value(0)
+                ic3.value(0)
+                ipf.value(0)
+        while scr == "Sequence":
+            time.sleep(0.2)
+            if bru.value() == True:
+                scr = "Race"
+                time.sleep(1)
+                e1m.value(0)
+                e2m.value(0)
+                e3m.value(0)
+                e4m.value(0)
+                e5m.value(0)
+                ec1.value(0)
+                ec2.value(0)
+                ec3.value(0)
+                epf.value(0)
+                i1m.value(0)
+                i2m.value(0)
+                i3m.value(0)
+                i4m.value(0)
+                i5m.value(0)
+                ic1.value(0)
+                ic2.value(0)
+                ic3.value(0)
+                ipf.value(0)
+            while bld.value() == True:
+                if eh == 1:
+                    ehn.value(1)
+            ehn.value(0)
+
 rtc = machine.RTC()
 
 rtc.datetime((2008, 2, 26, 0, 13, 40, 00, 0))
@@ -129,6 +250,8 @@ bz()
 time.sleep(3)
 lcd.hide_cursor()
 lcd.clear()
+
+_thread.start_new_thread(c2, ())
 
 while True:
     lcd.clear()
@@ -429,15 +552,202 @@ while True:
             lcd.putstr("Starting in 1s")
             bz()
         elif second == 00:
-            bz()
-            lcd.move_to(0,0)
-            lcd.putstr("Starting      ")
-            time.sleep(1)
-            scr = "Race"
+            scr = "Sequence"
+            if sl == 5:
+                timeup = (time.time() + 300)
+            elif sl == 3:
+                timeup = (time.time() + 180)
         if bru.value() == True:
             scr = "Race"
             time.sleep(0.2)
-    lcd.clear()
+    while scr == "Sequence":
+        if f1 == 1:
+            if sl == 5:
+                if scr == "Sequence":
+                    timeup = (time.time() + 300)
+                    i1m.value(1)
+                    i2m.value(1)
+                    i3m.value(1)
+                    i4m.value(1)
+                    i5m.value(1)
+                    ic1.value(1)
+                    if el == 1:
+                        e1m.value(1)
+                        e2m.value(1)
+                        e3m.value(1)
+                        e4m.value(1)
+                        e5m.value(1)
+                        ec1.value(1)
+                    if eh == 1:
+                        ehn.value(1)
+                    while time.time() < (timeup - 299):
+                        lcd.move_to(0,0)
+                        lcd.putstr("5:00 C1 Up     X")
+                        timecurr()
+                    if eh == 1:
+                        ehn.value(0)
+                if scr == "Sequence":
+                    while time.time() < (timeup - 243):
+                        lcd.move_to(0,0)
+                        srem = (timeup - 240) - time.time()
+                        if srem < 10:
+                            trem = '{}{}{}'.format("4:0", srem, " C1        X")
+                            lcd.putstr(trem)
+                        else:
+                            trem = '{}{}{}'.format("4:", srem, " C1        X")
+                            lcd.putstr(trem)
+                        timecurr()
+                        if scr == "Race":
+                            break
+                if scr == "Sequence":
+                    while time.time() < (timeup - 242):
+                        lcd.move_to(0,0)
+                        lcd.putstr("4:03 P Up 3s   X")
+                        timecurr()
+                    while time.time() < (timeup - 241):
+                        lcd.move_to(0,0)
+                        lcd.putstr("4:02 P Up 2s   X")
+                        timecurr()
+                    while time.time() < (timeup - 240):
+                        lcd.move_to(0,0)
+                        lcd.putstr("4:01 P Up 1s   X")
+                        timecurr()
+                    i5m.value(0)
+                    ipf.value(1)
+                    if el == 1:
+                        e5m.value(0)
+                        epf.value(1)
+                    if eh == 1:
+                        ehn.value(1)
+                    while time.time() < (timeup - 239):
+                        lcd.move_to(0,0)
+                        lcd.putstr("4:00 P Up      X")
+                        timecurr()
+                    if eh == 1:
+                        ehn.value(0)
+                if scr == "Sequence":
+                    while time.time() < (timeup - 180):
+                        lcd.move_to(0,0)
+                        srem = (timeup - 180) - time.time()
+                        if srem < 10:
+                            trem = '{}{}{}'.format("3:0", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        else:
+                            trem = '{}{}{}'.format("3:", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        timecurr()
+                        if scr == "Race":
+                            break
+                if scr == "Sequence":
+                    i4m.value(0)
+                    if el == 1:
+                        e4m.value(0)
+                    while time.time() < (timeup - 179):
+                        lcd.move_to(0,0)
+                        lcd.putstr("3:00 C1 P      X")
+                        timecurr()
+                if scr == "Sequence":
+                    while time.time() < (timeup - 120):
+                        lcd.move_to(0,0)
+                        srem = (timeup - 120) - time.time()
+                        if srem < 10:
+                            trem = '{}{}{}'.format("2:0", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        else:
+                            trem = '{}{}{}'.format("2:", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        timecurr()
+                        if scr == "Race":
+                            break
+                if scr == "Sequence":
+                    i3m.value(0)
+                    if el == 1:
+                        e3m.value(0)
+                    while time.time() < (timeup - 119):
+                        lcd.move_to(0,0)
+                        lcd.putstr("2:00 C1 P      X")
+                        timecurr()
+                if scr == "Sequence":
+                    while time.time() < (timeup - 63):
+                        lcd.move_to(0,0)
+                        srem = (timeup - 60) - time.time()
+                        if srem < 10:
+                            trem = '{}{}{}'.format("1:0", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        else:
+                            trem = '{}{}{}'.format("1:", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        timecurr()
+                        if scr == "Race":
+                            break
+                if scr == "Sequence":
+                    while time.time() < (timeup - 62):
+                        lcd.move_to(0,0)
+                        lcd.putstr("1:03 P Dn 3s   X")
+                        timecurr()
+                    while time.time() < (timeup - 61):
+                        lcd.move_to(0,0)
+                        lcd.putstr("1:02 P Dn 2s   X")
+                        timecurr()
+                    while time.time() < (timeup - 60):
+                        lcd.move_to(0,0)
+                        lcd.putstr("1:01 P Dn 1s   X")
+                        timecurr()
+                    i2m.value(0)
+                    ipf.value(0)
+                    if el == 1:
+                        e2m.value(0)
+                        epf.value(0)
+                    if eh == 1:
+                        ehn.value(1)
+                    while time.time() < (timeup - 58):
+                        lcd.move_to(0,0)
+                        lcd.putstr("1:00 P Down    X")
+                        timecurr()
+                    if eh == 1:
+                        ehn.value(0)
+                if scr == "Sequence":
+                    while time.time() < (timeup - 3):
+                        lcd.move_to(0,0)
+                        srem = timeup - time.time()
+                        if srem < 10:
+                            trem = '{}{}{}'.format("0:0", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        else:
+                            trem = '{}{}{}'.format("0:", srem, " C1 P      X")
+                            lcd.putstr(trem)
+                        timecurr()
+                        if scr == "Race":
+                            break
+                if scr == "Sequence":
+                    while time.time() < (timeup - 2):
+                        lcd.move_to(0,0)
+                        lcd.putstr("0:03 C1 Dn 3s  X")
+                        timecurr()
+                    while time.time() < (timeup - 1):
+                        lcd.move_to(0,0)
+                        lcd.putstr("0:02 C1 Dn 2s  X")
+                        timecurr()
+                    while time.time() < timeup:
+                        lcd.move_to(0,0)
+                        lcd.putstr("0:01 C1 Dn 1s  X")
+                        timecurr()
+                    i1m.value(0)
+                    ic1.value(0)
+                    if el == 1:
+                        e1m.value(0)
+                        ec1.value(0)
+                    lcd.move_to(0,0)
+                    if eh == 1:
+                        ehn.value(1)
+                    while time.time() == timeup:
+                        lcd.putstr("0:00 C1 Down   X")
+                        timecurr()
+                    if eh == 1:
+                        ehn.value(0)
+                    scr = "Race"
+        time.sleep(1)
+        scr = "Race"
     while scr == "ABD":
         lcd.move_to(0,0)
         lcd.putstr("Abandon")
@@ -794,7 +1104,7 @@ while True:
     lcd.clear()
     while scr == "Config9":
         lcd.move_to(0,0)
-        lcd.putstr("OSVer = 1A2")
+        lcd.putstr("OSVer = 1A3")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
