@@ -1,3 +1,5 @@
+#1.0A4
+
 from machine import I2C, Pin
 import time
 from pico_i2c_lcd import I2cLcd
@@ -9,6 +11,8 @@ i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 I2C_ADDR = i2c.scan()[0]
 
 lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+
+machine.freq(270000000)
 
 brd = Pin(2, Pin.IN)
 bru = Pin(3, Pin.IN)
@@ -55,6 +59,8 @@ ic2.value(0)
 ic3.value(0)
 ipf.value(0)
 led.value(0)
+
+timeup = 0
 
 stao = open("sta", "r")
 sta = stao.read(1)
@@ -140,12 +146,12 @@ def timecurr():
 
 def bz():
     bzt = 0
-    #while bzt = 0:#50
-        #buzz.value(1)
-        #time.sleep(0.001)
-        #buzz.value(0)
-        #time.sleep(0.001)
-        #bzt = bzt + 1
+    while bzt < 50:
+        buzz.value(1)
+        time.sleep(0.001)
+        buzz.value(0)
+        time.sleep(0.001)
+        bzt = bzt + 1
 
 def c2():
     global brd
@@ -185,6 +191,7 @@ def c2():
     global lte
     global ibz
     global dns
+    global timeup
     while True:
         time.sleep(0.2)
         while scr == "Start":
@@ -210,6 +217,24 @@ def c2():
                 ic2.value(0)
                 ic3.value(0)
                 ipf.value(0)
+            if second == 55:
+                bz()
+                time.sleep(0.3)
+            elif second == 56:
+                bz()
+                time.sleep(0.3)
+            elif second == 57:
+                bz()
+                time.sleep(0.3)
+            elif second == 58:
+                bz()
+                time.sleep(0.3)
+            elif second == 59:
+                bz()
+                time.sleep(0.3)
+            elif second == 00:
+                bz()
+                time.sleep(0.3)
         while scr == "Sequence":
             time.sleep(0.2)
             if bru.value() == True:
@@ -233,6 +258,43 @@ def c2():
                 ic2.value(0)
                 ic3.value(0)
                 ipf.value(0)
+            if sl == 5:
+                if time.time() == (timeup - 243):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 242):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 241):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 240):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 63):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 62):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 61):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 60):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 3):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 2):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == (timeup - 1):
+                    bz()
+                    time.sleep(0.3)
+                elif time.time() == timeup:
+                    bz()
+                    time.sleep(0.3)
             while bld.value() == True:
                 if eh == 1:
                     ehn.value(1)
@@ -534,23 +596,18 @@ while True:
         if second == 55:
             lcd.move_to(0,0)
             lcd.putstr("Starting in 5s")
-            bz()
         elif second == 56:
             lcd.move_to(0,0)
             lcd.putstr("Starting in 4s")
-            bz()
         elif second == 57:
             lcd.move_to(0,0)
             lcd.putstr("Starting in 3s")
-            bz()
         elif second == 58:
             lcd.move_to(0,0)
             lcd.putstr("Starting in 2s")
-            bz()
         elif second == 59:
             lcd.move_to(0,0)
             lcd.putstr("Starting in 1s")
-            bz()
         elif second == 00:
             scr = "Sequence"
             if sl == 5:
@@ -757,7 +814,7 @@ while True:
         lcd.putstr("<= N,H     AP =>")
         time.sleep(0.2)
         if bru.value() == True:
-            scr = "Home"
+            scr = "Race"
         elif brd.value() == True:
             scr = "AP"
             ehn.value(1)
@@ -1104,7 +1161,7 @@ while True:
     lcd.clear()
     while scr == "Config9":
         lcd.move_to(0,0)
-        lcd.putstr("OSVer = 1A3")
+        lcd.putstr("OSVer = 1A4")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
