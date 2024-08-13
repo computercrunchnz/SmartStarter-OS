@@ -1,16 +1,20 @@
-#1.0A4
+ver = "1.0A5"
 
 from machine import I2C, Pin
 import time
 from pico_i2c_lcd import I2cLcd
 import _thread
 import machine
+from machine import PWM
 
 i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 
 I2C_ADDR = i2c.scan()[0]
 
 lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+
+buz = PWM(Pin(17))
+buz.freq(4000)
 
 machine.freq(270000000)
 
@@ -29,7 +33,6 @@ i2m = Pin(13, Pin.OUT)
 i3m = Pin(14, Pin.OUT)
 i4m = Pin(15, Pin.OUT)
 i5m = Pin(16, Pin.OUT)
-buzz = Pin(17, Pin.OUT)
 ic1 = Pin(18, Pin.OUT)
 ic2 = Pin(19, Pin.OUT)
 ic3 = Pin(20, Pin.OUT)
@@ -104,6 +107,10 @@ lteo = open("lte", "r")
 lte = int(lteo.read())
 lteo.close()
 
+silo = open("sil", "r")
+sil = int(silo.read())
+silo.close()
+
 def timecurr():
     tm = rtc.datetime()
     year = tm[0]
@@ -144,14 +151,46 @@ def timecurr():
                 timed = '{}{}{}{}{}{}'.format("<= Horn ", hour, ":", minute, ":", second)
                 lcd.putstr(str(timed))
 
-def bz():
-    bzt = 0
-    while bzt < 50:
-        buzz.value(1)
-        time.sleep(0.001)
-        buzz.value(0)
-        time.sleep(0.001)
-        bzt = bzt + 1
+def timecurrbs5():
+    tm = rtc.datetime()
+    year = tm[0]
+    month = tm[1]
+    day = tm[2]
+    hour = tm[4]
+    minute = tm[5]
+    second = tm[6]
+    lcd.move_to(0,1)
+    if hour < 10:
+        if minute < 10:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("05:00   0", hour, ":0", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("05:00   0", hour, ":0", minute, ":", second)
+                lcd.putstr(str(timed))
+        else:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("05:00   0", hour, ":", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("05:00   0", hour, ":", minute, ":", second)
+                lcd.putstr(str(timed))
+    else:
+        if minute < 10:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("05:00   ", hour, ":0", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("05:00   ", hour, ":0", minute, ":", second)
+                lcd.putstr(str(timed))
+        else:
+            if second < 10:
+                timed = '{}{}{}{}{}{}'.format("05:00   ", hour, ":", minute, ":0", second)
+                lcd.putstr(str(timed))
+            else:
+                timed = '{}{}{}{}{}{}'.format("05:00   ", hour, ":", minute, ":", second)
+                lcd.putstr(str(timed))
+
 
 def c2():
     global brd
@@ -192,13 +231,19 @@ def c2():
     global ibz
     global dns
     global timeup
+    global buz
+    global sil
     while True:
         time.sleep(0.2)
         while scr == "Start":
             time.sleep(0.2)
             if bru.value() == True:
                 scr = "Race"
+                if sil == 0:
+                    buz.duty_u16(4000)
                 time.sleep(1)
+                if sil == 0:
+                    buz.duty_u16(000)
                 e1m.value(0)
                 e2m.value(0)
                 e3m.value(0)
@@ -217,29 +262,52 @@ def c2():
                 ic2.value(0)
                 ic3.value(0)
                 ipf.value(0)
-            if second == 55:
-                bz()
-                time.sleep(0.3)
+            elif second == 55:
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
             elif second == 56:
-                bz()
-                time.sleep(0.3)
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
             elif second == 57:
-                bz()
-                time.sleep(0.3)
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
             elif second == 58:
-                bz()
-                time.sleep(0.3)
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
             elif second == 59:
-                bz()
-                time.sleep(0.3)
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
             elif second == 00:
-                bz()
-                time.sleep(0.3)
+                if sil == 0:
+                    buz.duty_u16(4000)
+                    time.sleep(0.2)
+                    buz.duty_u16(000)
+            while bld.value() == True:
+                if eh == 1:
+                    ehn.value(1)
+                if sil == 0:
+                    buz.duty_u16(4000)
+            if eh == 1:
+                ehn.value(0)
+            if sil == 0:
+                buz.duty_u16(000)
         while scr == "Sequence":
             time.sleep(0.2)
             if bru.value() == True:
                 scr = "Race"
+                buz.duty_u16(4000)
                 time.sleep(1)
+                buz.duty_u16(000)
                 e1m.value(0)
                 e2m.value(0)
                 e3m.value(0)
@@ -258,47 +326,76 @@ def c2():
                 ic2.value(0)
                 ic3.value(0)
                 ipf.value(0)
-            if sl == 5:
+            elif sl == 5:
                 if time.time() == (timeup - 243):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 242):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 241):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 240):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 63):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 62):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 61):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 60):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 3):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 2):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == (timeup - 1):
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
                 elif time.time() == timeup:
-                    bz()
-                    time.sleep(0.3)
+                    if sil == 0:
+                        buz.duty_u16(4000)
+                        time.sleep(0.2)
+                        buz.duty_u16(000)
             while bld.value() == True:
                 if eh == 1:
                     ehn.value(1)
-            ehn.value(0)
+                if sil == 0:
+                    buz.duty_u16(4000)
+            if eh == 1:
+                ehn.value(0)
+            if sil == 0:
+                buz.duty_u16(000)
 
 rtc = machine.RTC()
 
@@ -308,8 +405,11 @@ lcd.clear()
 lcd.putstr("SmartStarter")
 lcd.show_cursor()
 lcd.blink_cursor_on()
-bz()
-time.sleep(3)
+if sil == 0:
+    buz.duty_u16(4000)
+time.sleep(1)
+if sil == 0:
+    buz.duty_u16(0)
 lcd.hide_cursor()
 lcd.clear()
 
@@ -459,7 +559,14 @@ while True:
         if blu.value() == True:
             scr = "Race"
         while bld.value() == True:
-            bz()
+            if sil == 0:
+                buz.duty_u16(4000)
+            if eh == 1:
+                ehn.value(1)
+        if eh == 1:
+            ehn.value(0)
+        if sil == 0:
+            buz.duty_u16(000)
         if brd.value() == True:
             scr = "Config1"
         elif bru.value() == True:
@@ -510,9 +617,16 @@ while True:
         time.sleep(0.2)
         if blu.value() == True:
             scr = "Start"
-        elif bld.value() == True:
-            bz()
-        elif bru.value() == True:
+        while bld.value() == True:
+            if sil == 0:
+                buz.duty_u16(4000)
+            if eh == 1:
+                ehn.value(1)
+        if sil == 0:
+            buz.duty_u16(000)
+        if eh == 1:
+            ehn.value(0)
+        if bru.value() == True:
             scr = "Home"
         elif brd.value() == True:
             scr = "ABD"
@@ -955,12 +1069,12 @@ while True:
             elif rs == 1:
                 rso = open("rs1", "w")
                 rs = 0
-                rso.write(str(sl))
+                rso.write(str(rs))
                 rso.close()
             else:
                 rso = open("rs1", "w")
                 rs = 0
-                rso.write(str(sl))
+                rso.write(str(rs))
                 rso.close()
         elif brd.value() == True:
             scr = "Config3"
@@ -1087,22 +1201,49 @@ while True:
         lcd.putstr("<= Set   Next =>")
         time.sleep(0.2)
         if bld.value() == True:
-            if el == 0:
-                elo = open("eh", "w")
-                el = 1
-                elo.write(str(el))
-                elo.close()
-            elif el == 1:
-                elo = open("eh", "w")
-                el = 0
-                elo.write(str(el))
-                elo.close()
+            if eh == 0:
+                eho = open("eh", "w")
+                eh = 1
+                eho.write(str(eh))
+                eho.close()
+            elif eh == 1:
+                eho = open("eh", "w")
+                eh = 0
+                eho.write(str(eh))
+                eho.close()
         elif brd.value() == True:
             scr = "Config8"
         elif bru.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config8":
+        lcd.move_to(0,0)
+        if sil == 0:
+            lcd.putstr("Silent = No ")
+        elif sil == 1:
+            lcd.putstr("Silent = Yes")
+        lcd.move_to(15,0)
+        lcd.putchar("X")
+        lcd.move_to(0,1)
+        lcd.putstr("<= Set   Next =>")
+        time.sleep(0.2)
+        if bld.value() == True:
+            if sil == 0:
+                silo = open("sil", "w")
+                sil = 1
+                silo.write(str(sil))
+                silo.close()
+            elif sil == 1:
+                silo = open("sil", "w")
+                sil = 0
+                silo.write(str(sil))
+                silo.close()
+        elif brd.value() == True:
+            scr = "Config9"
+        elif bru.value() == True:
+            scr = "Home"
+    lcd.clear()
+    while scr == "Config9":
         lcd.move_to(0,0)
         if lte == 0:
             lcd.putstr("LTest = No ")
@@ -1155,13 +1296,13 @@ while True:
                 ic3.value(0)
                 ipf.value(0)
         elif brd.value() == True:
-            scr = "Config9"
+            scr = "Config10"
         elif bru.value() == True:
             scr = "Home"
     lcd.clear()
-    while scr == "Config9":
+    while scr == "Config10":
         lcd.move_to(0,0)
-        lcd.putstr("OSVer = 1A4")
+        lcd.putstr("OSVer = " + ver)
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
