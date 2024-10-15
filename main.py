@@ -1,4 +1,4 @@
-ver = "1.0B3"
+ver = "1.0B4"
 
 from machine import I2C, Pin
 import time
@@ -1889,7 +1889,7 @@ while True:
                         horn.value(0)
                 if scr == "Sequence":
                     #Countdown to 1 Minute
-                    while time.time() < (timeup - 5):
+                    while time.time() < (timeup - 65):
                         lcd.move_to(0,0)
                         srem = (timeup - 60) - time.time()
                         if srem < 10:
