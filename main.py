@@ -1,4 +1,4 @@
-ver = "1.0B4"
+ver = "1.0B5"
 
 from machine import I2C, Pin
 import time
@@ -192,7 +192,6 @@ def thread2():
     while True:
         time.sleep(0.2)
         while scr == "Start":
-            time.sleep(0.2)
             if uprightbutton.value() == True:
                 scr = "Race"
                 if silent == 0:
@@ -2002,26 +2001,39 @@ while True:
             scr = "AP"
             lcd.move_to(0,1)
             lcd.putstr("AP Going Up     ")
+            oneminutelight.value(1)
+            threeminutelight.value(1)
+            fiveminutelight.value(1)
+            plight.value(1)
+            fleetonelight.value(1)
             time.sleep(0.2)
             if externalhorn == 1:
                 horn.value(1)
                 time.sleep(1)
                 horn.value(0)
-                time.sleep(0.5)
+                time.sleep(1)
                 horn.value(1)
                 time.sleep(1)
                 horn.value(0)
         elif lowleftbutton.value() == True:
             scr = "NHA"
+            lcd.move_to(0,1)
+            lcd.putstr("N,H Going Up    ")
+            oneminutelight.value(1)
+            threeminutelight.value(1)
+            fiveminutelight.value(1)
+            plight.value(1)
+            fleetonelight.value(1)
+            fleettwolight.value(1)
             time.sleep(0.2)
             horn.value(1)
             time.sleep(1)
             horn.value(0)
-            time.sleep(0.5)
+            time.sleep(1)
             horn.value(1)
             time.sleep(1)
             horn.value(0)
-            time.sleep(0.5)
+            time.sleep(1)
             horn.value(1)
             time.sleep(1)
             horn.value(0)
@@ -2032,11 +2044,6 @@ while True:
         lcd.putstr("AP Up")
         lcd.move_to(0,1)
         lcd.putstr("         Down =>")
-        oneminutelight.value(1)
-        threeminutelight.value(1)
-        fiveminutelight.value(1)
-        plight.value(1)
-        fleetonelight.value(1)
         if lowrightbutton.value() == 1:
             scr = "ABD"
             lcd.move_to(0,0)
@@ -2059,17 +2066,10 @@ while True:
         lcd.putstr("N or H Up")
         lcd.move_to(0,1)
         lcd.putstr("         Down =>")
-        oneminutelight.value(1)
-        threeminutelight.value(1)
-        fiveminutelight.value(1)
-        plight.value(1)
-        fleetonelight.value(1)
-        fleettwolight.value(1)
-        time.sleep(0.2)
         if lowrightbutton.value() == 1:
             scr = "ABD"
             lcd.move_to(0,0)
-            lcd.putstr("AP Down")
+            lcd.putstr("N or H Down")
             if externalhorn == 1:
                 horn.value(1)
             oneminutelight.value(0)
@@ -2129,14 +2129,9 @@ while True:
             if rollingstart == 0:
                 rollingstartopen = open("rollingstart1", "w")
                 rollingstart = 1
-                rollingstartopen.write(str(startlength))
-                rollingstartopen.close()
-            elif rollingstart == 1:
-                rollingstartopen = open("rollingstart1", "w")
-                rollingstart = 0
                 rollingstartopen.write(str(rollingstart))
                 rollingstartopen.close()
-            else:
+            elif rollingstart == 1:
                 rollingstartopen = open("rollingstart1", "w")
                 rollingstart = 0
                 rollingstartopen.write(str(rollingstart))
