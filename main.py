@@ -1,4 +1,4 @@
-ver = "1.0A7"
+ver = "1.0B1"
 
 from machine import I2C, Pin
 import time
@@ -7,7 +7,11 @@ import _thread
 import machine
 from machine import PWM
 
+#Overclock CPU
+
 machine.freq(270000000)
+
+#Display Setup
 
 i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 
@@ -15,99 +19,101 @@ I2C_ADDR = i2c.scan()[0]
 
 lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
 
+#Buzzer PWM Setup
+
 buz = PWM(Pin(17))
 buz.freq(3500)
 
-brd = Pin(2, Pin.IN)
-bru = Pin(3, Pin.IN)
-bld = Pin(4, Pin.IN)
-blu = Pin(5, Pin.IN)
-e1m = Pin(6, Pin.OUT)
-e2m = Pin(7, Pin.OUT)
-e3m = Pin(8, Pin.OUT)
-e4m = Pin(9, Pin.OUT)
-e5m = Pin(10, Pin.OUT)
-ec1 = Pin(11, Pin.OUT)
-i1m = Pin(12, Pin.OUT)
-i2m = Pin(13, Pin.OUT)
-i3m = Pin(14, Pin.OUT)
-i4m = Pin(15, Pin.OUT)
-i5m = Pin(16, Pin.OUT)
-ic1 = Pin(18, Pin.OUT)
-ic2 = Pin(19, Pin.OUT)
-ic3 = Pin(20, Pin.OUT)
-ipf = Pin(21, Pin.OUT)
-ehn = Pin(22, Pin.OUT)
-ec2 = Pin(26, Pin.OUT)
-ec3 = Pin(27, Pin.OUT)
-epf = Pin(28, Pin.OUT)
+#IO Setup
+
+lowrightbutton = Pin(2, Pin.IN)
+uprightbutton = Pin(3, Pin.IN)
+lowleftbutton = Pin(4, Pin.IN)
+upleftbutton = Pin(5, Pin.IN)
+hornbutton = Pin(28, Pin.IN)
+oneminutelight = Pin(6, Pin.OUT)
+twominutelight = Pin(7, Pin.OUT)
+threeminutelight = Pin(8, Pin.OUT)
+fourminutelight = Pin(9, Pin.OUT)
+fiveminutelight = Pin(10, Pin.OUT)
+fleetonelight = Pin(11, Pin.OUT)
+fleettwolight = Pin(12, Pin.OUT)
+fleetthreelight = Pin(13, Pin.OUT)
+plight = Pin(14, Pin.OUT)
+horn = Pin(22, Pin.OUT)
 led = Pin(25, Pin.OUT)
 
-e1m.value(0)
-e2m.value(0)
-e3m.value(0)
-e4m.value(0)
-e5m.value(0)
-ec1.value(0)
-ec2.value(0)
-ec3.value(0)
-epf.value(0)
-i1m.value(0)
-i2m.value(0)
-i3m.value(0)
-i4m.value(0)
-i5m.value(0)
-ic1.value(0)
-ic2.value(0)
-ic3.value(0)
-ipf.value(0)
+
+#All Outputs Off
+
+oneminutelight.value(0)
+twominutelight.value(0)
+threeminutelight.value(0)
+fourminutelight.value(0)
+fiveminutelight.value(0)
+fleetonelight.value(0)
+fleettwolight.value(0)
+fleetthreelight.value(0)
+plight.value(0)
 led.value(0)
 
 timeup = 0
 
-sta = 0
+start = 0
+
+dispon = 1
+
+#Set Screen
 
 scr = "TimeYN"
 
-slo = open("sl", "r")
-sl = int(slo.read())
-slo.close()
+#Open saved variables
 
-f1o = open("f1", "r")
-f1 = int(f1o.read())
-f1o.close()
+startlengthopen = open("startlength", "r")
+startlength = int(startlengthopen.read())
+startlengthopen.close()
 
-f2o = open("f2", "r")
-f2 = int(f2o.read())
-f2o.close()
+fleetoneopen = open("fleetone", "r")
+fleetone = int(fleetoneopen.read())
+fleetoneopen.close()
 
-f3o = open("f3", "r")
-f3 = int(f3o.read())
-f3o.close()
+fleettwoopen = open("fleettwo", "r")
+fleettwo = int(fleettwoopen.read())
+fleettwoopen.close()
 
-rso = open("rs1", "r")
-rs = int(rso.read())
-rso.close()
+fleetthreeopen = open("fleetthree", "r")
+fleetthree = int(fleetthreeopen.read())
+fleetthreeopen.close()
 
-elo = open("el", "r")
-el = int(elo.read())
-elo.close()
+rollingstartopen = open("rollingstart1", "r")
+rollingstart = int(rollingstartopen.read())
+rollingstartopen.close()
 
-eho = open("eh", "r")
-eh = int(eho.read())
-eho.close()
+externallightsopen = open("externallights", "r")
+externallights = int(externallightsopen.read())
+externallightsopen.close()
 
-ibzo = open("ibz", "r")
-ibz = int(ibzo.read())
-ibzo.close()
+externalhornopen = open("externalhorn", "r")
+externalhorn = int(externalhornopen.read())
+externalhornopen.close()
 
-lteo = open("lte", "r")
-lte = int(lteo.read())
-lteo.close()
+internalbuzzeropen = open("internalbuzzer", "r")
+internalbuzzer = int(internalbuzzeropen.read())
+internalbuzzeropen.close()
 
-silo = open("sil", "r")
-sil = int(silo.read())
-silo.close()
+lighttestopen = open("lighttest", "r")
+lighttest = int(lighttestopen.read())
+lighttestopen.close()
+
+silententopen = open("silent", "r")
+silent = int(silententopen.read())
+silententopen.close()
+
+waitbeforestartopen = open("waitbeforestart", "r")
+waitbeforestart = int(waitbeforestartopen.read())
+waitbeforestartopen.close()
+
+#Set Get Time Functions
 
 def timecurr():
     tm = rtc.datetime()
@@ -188,306 +194,298 @@ def timecurrbs5():
             else:
                 timed = '{}{}{}{}{}{}'.format("05:00   ", hour, ":", minute, ":", second)
                 lcd.putstr(str(timed))
+                
+#Set second thread function
 
-
-def c2():
-    global brd
-    global bru
-    global bld
-    global blu
-    global e1m
-    global e2m
-    global e3m
-    global e4m
-    global e5m
-    global ec1
-    global i1m
-    global i2m
-    global i3m
-    global i4m
-    global i5m
+def thread2():
+    global lowrightbutton
+    global uprightbutton
+    global lowleftbutton
+    global upleftbutton
+    global oneminutelight
+    global twominutelight
+    global threeminutelight
+    global fourminutelight
+    global fiveminutelight
+    global fleetonelight
     global buzz
-    global ic1
-    global ic2
-    global ic3
-    global ipf
-    global ehn
-    global ec2
-    global ec3
-    global epf
+    global horn
+    global fleettwolight
+    global fleetthreelight
+    global plight
     global led
-    global sta
+    global start
     global scr
-    global sl
-    global f1
-    global f2
-    global f3
-    global rs
-    global el
-    global eh
-    global lte
-    global ibz
+    global startlength
+    global fleetone
+    global fleettwo
+    global fleetthree
+    global rollingstart
+    global externallights
+    global externalhorn
+    global lighttest
+    global internalbuzzer
     global dns
     global timeup
     global buz
-    global sil
+    global silent
     while True:
         time.sleep(0.2)
         while scr == "Start":
             time.sleep(0.2)
-            if bru.value() == True:
+            if uprightbutton.value() == True:
                 scr = "Race"
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                 time.sleep(1)
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(000)
-                e1m.value(0)
-                e2m.value(0)
-                e3m.value(0)
-                e4m.value(0)
-                e5m.value(0)
-                ec1.value(0)
-                ec2.value(0)
-                ec3.value(0)
-                epf.value(0)
-                i1m.value(0)
-                i2m.value(0)
-                i3m.value(0)
-                i4m.value(0)
-                i5m.value(0)
-                ic1.value(0)
-                ic2.value(0)
-                ic3.value(0)
-                ipf.value(0)
+                oneminutelight.value(0)
+                twominutelight.value(0)
+                threeminutelight.value(0)
+                fourminutelight.value(0)
+                fiveminutelight.value(0)
+                fleetonelight.value(0)
+                fleettwolight.value(0)
+                fleetthreelight.value(0)
+                plight.value(0)
             elif second == 55:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
             elif second == 56:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
             elif second == 57:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
             elif second == 58:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
             elif second == 59:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
             elif second == 00:
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                     time.sleep(0.2)
                     buz.duty_u16(000)
-            while bld.value() == True:
-                if eh == 1:
-                    ehn.value(1)
-                if sil == 0:
+            while lowleftbutton.value() == True:
+                if externalhorn == 1:
+                    horn.value(1)
+                if silent == 0:
                     buz.duty_u16(3500)
-            if eh == 1:
-                ehn.value(0)
-            if sil == 0:
+            if externalhorn == 1:
+                horn.value(0)
+            if silent == 0:
                 buz.duty_u16(000)
+            while hornbutton.value() == True:
+                if externalhorn == 1:
+                    horn.value(1)
+                if hornbutton.value() == False:
+                    horn.value(0)
         while scr == "Sequence":
             time.sleep(0.2)
-            if bru.value() == True:
+            if uprightbutton.value() == True:
                 scr = "Race"
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(3500)
                 time.sleep(1)
-                if sil == 0:
+                if silent == 0:
                     buz.duty_u16(000)
-                e1m.value(0)
-                e2m.value(0)
-                e3m.value(0)
-                e4m.value(0)
-                e5m.value(0)
-                ec1.value(0)
-                ec2.value(0)
-                ec3.value(0)
-                epf.value(0)
-                i1m.value(0)
-                i2m.value(0)
-                i3m.value(0)
-                i4m.value(0)
-                i5m.value(0)
-                ic1.value(0)
-                ic2.value(0)
-                ic3.value(0)
-                ipf.value(0)
-            elif sl == 5:
+                oneminutelight.value(0)
+                twominutelight.value(0)
+                threeminutelight.value(0)
+                fourminutelight.value(0)
+                fiveminutelight.value(0)
+                fleetonelight.value(0)
+                fleettwolight.value(0)
+                fleetthreelight.value(0)
+                plight.value(0)
+            elif startlength == 5:
                 if time.time() == (timeup - 243):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 242):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 241):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 240):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 63):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 62):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 61):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 60):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 3):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 2):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 1):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == timeup:
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
-            elif sl == 3:
+            elif startlength == 3:
                 if time.time() == (timeup - 123):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 122):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 121):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 120):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 63):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 62):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 61):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 60):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 3):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 2):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == (timeup - 1):
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
                 elif time.time() == timeup:
-                    if sil == 0:
+                    if silent == 0:
                         buz.duty_u16(3500)
                         time.sleep(0.2)
                         buz.duty_u16(000)
             
-            while bld.value() == True:
-                if eh == 1:
-                    ehn.value(1)
-                if sil == 0:
+            while lowleftbutton.value() == True:
+                if externalhorn == 1:
+                    horn.value(1)
+                if silent == 0:
                     buz.duty_u16(3500)
-            if eh == 1:
-                ehn.value(0)
-            if sil == 0:
+            if externalhorn == 1:
+                horn.value(0)
+            if silent == 0:
                 buz.duty_u16(000)
+        else:
+            while hornbutton.value() == True:
+                if externalhorn == 1:
+                    horn.value(1)
+                if hornbutton.value() == False:
+                    horn.value(0)
 
 rtc = machine.RTC()
 
 rtc.datetime((2008, 2, 26, 0, 13, 40, 00, 0))
 
+#Splash Screen
+
 lcd.clear()
 lcd.putstr("SmartStarter")
 lcd.show_cursor()
 lcd.blink_cursor_on()
-if sil == 0:
+if silent == 0:
     buz.duty_u16(3500)
 time.sleep(1)
-if sil == 0:
+if silent == 0:
     buz.duty_u16(0)
 lcd.hide_cursor()
 lcd.clear()
 
-_thread.start_new_thread(c2, ())
+#Start Second Thread
+
+_thread.start_new_thread(thread2, ())
+
+#Main Loop
 
 while True:
     lcd.clear()
     while scr == "TimeYN":
+        #Set Time Yes or No
         lcd.move_to(0,0)
         lcd.putstr("Set DateTime?")
         lcd.move_to(0,1)
         lcd.putstr("<= No     Yes =>")
-        time.sleep(0.2)
-        if bld.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
             scr = "Home"
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time1"
             tm = rtc.datetime()
             year = tm[0]
@@ -496,25 +494,27 @@ while True:
             hour = tm[4]
             minute = tm[5]
             second = tm[6]
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time1":
+        #Set Year
         lcd.move_to(0,0)
         lcd.putstr("<= Up  Year:" + str(year))
         lcd.move_to(0,1)
         lcd.putstr("<= Down  Next =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             year = year + 1
-        elif bld.value() == True:
+        elif lowleftbutton.value() == True:
             year = year - 1
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time2"
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time2":
+        #Set Month
         lcd.move_to(0,0)
         if month < 10:
             lcd.putstr("<= Up    Month:" + str(month))
@@ -523,18 +523,19 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Down  Next =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             if month <= 12:
                 month = month + 1
-        elif bld.value() == True:
+        elif lowleftbutton.value() == True:
             if month > 1:
                 month = month - 1
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time3"
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time3":
+        #Set Day
         lcd.move_to(0,0)
         if day < 10:
             lcd.putstr("<= Up      Day:" + str(day))
@@ -543,18 +544,19 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Down  Next =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             if day < 32:
                 day = day + 1
-        elif bld.value() == True:
+        elif lowleftbutton.value() == True:
             if day > 0:
                 day = day - 1
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time4"
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time4":
+        #Set Hour
         lcd.move_to(0,0)
         if hour < 10:
             lcd.putstr("<= Up     Hour:" + str(hour))
@@ -563,18 +565,19 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Down  Next =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             if hour < 25:
                 hour = hour + 1
-        elif bld.value() == True:
+        elif lowleftbutton.value() == True:
             if hour > 1:
                 hour = hour - 1
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time5"
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time5":
+        #Set Minute
         lcd.move_to(0,0)
         if hour < 10:
             lcd.putstr("<= Up   Minute:" + str(minute))
@@ -583,18 +586,19 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Down  Next =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             if minute < 60:
                 minute = minute + 1
-        elif bld.value() == True:
+        elif lowleftbutton.value() == True:
             if minute > 0:
                 minute = minute - 1
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Time6"
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Time6":
+        #Set Second to 0
         lcd.move_to(0,0)
         if second < 10:
             lcd.putstr("        Second:" + str(second))
@@ -603,38 +607,38 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Set0  Exit =>")
         time.sleep(0.3)
-        if bld.value() == True:
+        if lowleftbutton.value() == True:
             second = 0
             rtc.datetime((year, month, day, 0, hour, minute, second, 0))
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "Home"
             rtc.datetime((year, month, day, 0, hour, minute, second, 0))
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Home":
+        #Home Screen
         lcd.move_to(0,0)
         lcd.putstr("<= Race  Time =>")
         lcd.move_to(0,1)
-        lcd.putstr("<= Horn   CFG =>")
+        lcd.putstr("<= D.O    CFG =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             scr = "Race"
-        while bld.value() == True:
-            if sil == 0:
-                buz.duty_u16(3500)
-            if eh == 1:
-                ehn.value(1)
-        if eh == 1:
-            ehn.value(0)
-        if sil == 0:
-            buz.duty_u16(000)
-        if brd.value() == True:
+        if lowleftbutton.value() == True:
+            if dispon == 1:
+                lcd.backlight_off()
+                dispon = 0
+            elif dispon == 0:
+                lcd.backlight_on()
+                dispon = 1
+        if lowrightbutton.value() == True:
             scr = "Config1"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Clock"
     lcd.clear()
     while scr == "Race":
+        #Race Menu
         tm = rtc.datetime()
         year = tm[0]
         month = tm[1]
@@ -677,20 +681,20 @@ while True:
         lcd.move_to(0,1)
         lcd.putstr("<= Horn   ABD =>")
         time.sleep(0.3)
-        if blu.value() == True:
+        if upleftbutton.value() == True:
             scr = "Start"
-        while bld.value() == True:
-            if sil == 0:
+        while lowleftbutton.value() == True:
+            if silent == 0:
                 buz.duty_u16(3500)
-            if eh == 1:
-                ehn.value(1)
-        if sil == 0:
+            if externalhorn == 1:
+                horn.value(1)
+        if silent == 0:
             buz.duty_u16(000)
-        if eh == 1:
-            ehn.value(0)
-        if bru.value() == True:
+        if externalhorn == 1:
+            horn.value(0)
+        if uprightbutton.value() == True:
             scr = "Home"
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "ABD"
     lcd.clear()
     while scr == "Clock":
@@ -747,60 +751,59 @@ while True:
             else:
                 dated = '{}{}{}{}{}{}'.format("", day, "/", month, "/", year)
                 lcd.putstr(dated)
-        if bru.value() == True:
+        if uprightbutton.value() == True:
             scr = "Home"
             time.sleep(0.3)
     while scr == "Start":
-        if f1 == 1:
-            sta = 1
-        elif f2 == 1:
-            sta = 1
-        elif f3 == 1:
-            sta = 1
+        if fleetone == 1:
+            start = 1
+        elif fleettwo == 1:
+            start = 1
+        elif fleetthree == 1:
+            start = 1
         else:
-            sta = 0
-        if sta == 1:
-            tm = rtc.datetime()
-            year = tm[0]
-            month = tm[1]
-            day = tm[2]
-            hour = tm[4]
-            minute = tm[5]
-            second = tm[6]
-            if second < 55:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting on 00")
-            lcd.move_to(0,1)
-            if sl == 5:
-                lcd.putstr("05:00")
-            elif sl == 3:
-                lcd.putstr("03:00")
-            lcd.move_to(15,0)
-            lcd.putchar("X")
-            if second == 55:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting in 5s")
-            elif second == 56:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting in 4s")
-            elif second == 57:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting in 3s")
-            elif second == 58:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting in 2s")
-            elif second == 59:
-                lcd.move_to(0,0)
-                lcd.putstr("Starting in 1s")
-            elif second == 00:
+            start = 0
+        if start == 1:
+            if waitbeforestart == 1:
+                tm = rtc.datetime()
+                year = tm[0]
+                month = tm[1]
+                day = tm[2]
+                hour = tm[4]
+                minute = tm[5]
+                second = tm[6]
+                if second < 55:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting on 00")
+                lcd.move_to(0,1)
+                if startlength == 5:
+                    lcd.putstr("05:00")
+                elif startlength == 3:
+                    lcd.putstr("03:00")
+                lcd.move_to(15,0)
+                lcd.putchar("X")
+                if second == 55:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting in 5s")
+                elif second == 56:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting in 4s")
+                elif second == 57:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting in 3s")
+                elif second == 58:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting in 2s")
+                elif second == 59:
+                    lcd.move_to(0,0)
+                    lcd.putstr("Starting in 1s")
+                elif second == 00:
+                    scr = "Sequence"
+                if uprightbutton.value() == True:
+                    scr = "Race"
+                    time.sleep(0.3)
+            else:
                 scr = "Sequence"
-                if sl == 5:
-                    timeup = (time.time() + 300)
-                elif sl == 3:
-                    timeup = (time.time() + 180)
-            if bru.value() == True:
-                scr = "Race"
-                time.sleep(0.2)
         else:
             lcd.move_to(0,0)
             lcd.putstr("Error! Must have")
@@ -809,31 +812,25 @@ while True:
             time.sleep(2)
             scr = "Race"
     while scr == "Sequence":
-        if f1 == 1:
-            if sl == 5:
+        if fleetone == 1:
+            if startlength == 5:
                 if scr == "Sequence":
                     timeup = (time.time() + 300)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    i4m.value(1)
-                    i5m.value(1)
-                    ic1.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        e4m.value(1)
-                        e5m.value(1)
-                        ec1.value(1)
-                    if eh == 1:
-                        ehn.value(1)
-                    while time.time() < (timeup - 299):
+                    if externalhorn == 1:
+                        horn.value(1)
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fourminutelight.value(1)
+                        fiveminutelight.value(1)
+                        fleetonelight.value(1)
+                    while time.time() < (timeup - 298):
                         lcd.move_to(0,0)
                         lcd.putstr("5:00 C1 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 243):
                         lcd.move_to(0,0)
@@ -860,19 +857,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("4:01 P Up 1s   X")
                         timecurr()
-                    i5m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e5m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        fiveminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 239):
                         lcd.move_to(0,0)
                         lcd.putstr("4:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 180):
                         lcd.move_to(0,0)
@@ -887,9 +882,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i4m.value(0)
-                    if el == 1:
-                        e4m.value(0)
+                    if externallights == 1:
+                        fourminutelight.value(0)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C1 P      X")
@@ -908,9 +902,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i3m.value(0)
-                    if el == 1:
-                        e3m.value(0)
+                    if externallights == 1:
+                        threeminutelight.value(0)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 C1 P      X")
@@ -941,19 +934,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -980,31 +971,25 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C1 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic1.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec1.value(0)
-            if sl == 3:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleetonelight.value(0)
+            if startlength == 3:
                 if scr == "Sequence":
                     timeup = (time.time() + 180)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    ic1.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        ec1.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fleetonelight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C1 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 123):
                         lcd.move_to(0,0)
@@ -1031,19 +1016,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("2:01 P Up 1s   X")
                         timecurr()
-                    i3m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e3m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        threeminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 63):
                         lcd.move_to(0,0)
@@ -1070,19 +1053,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -1109,36 +1090,28 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C1 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic1.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec1.value(0)
-        if f2 == 1:
-            if sl == 5:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleetonelight.value(0)
+        if fleettwo == 1:
+            if startlength == 5:
                 if scr == "Sequence":
-                    timeup = (time.time() + 300)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    i4m.value(1)
-                    i5m.value(1)
-                    ic2.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        e4m.value(1)
-                        e5m.value(1)
-                        ec2.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    timeup = (time.time() + 300) 
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fourminutelight.value(1)
+                        fiveminutelight.value(1)
+                        fleettwolight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 299):
                         lcd.move_to(0,0)
                         lcd.putstr("5:00 C2 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 243):
                         lcd.move_to(0,0)
@@ -1165,19 +1138,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("4:01 P Up 1s   X")
                         timecurr()
-                    i5m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e5m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        fiveminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 239):
                         lcd.move_to(0,0)
                         lcd.putstr("4:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 180):
                         lcd.move_to(0,0)
@@ -1192,9 +1163,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i4m.value(0)
-                    if el == 1:
-                        e4m.value(0)
+                    if externallights == 1:
+                        fourminutelight.value(0)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C2 P      X")
@@ -1213,9 +1183,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i3m.value(0)
-                    if el == 1:
-                        e3m.value(0)
+                    if externallights == 1:
+                        threeminutelight.value(0)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 C2 P      X")
@@ -1246,19 +1215,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -1285,31 +1252,25 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C2 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic2.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec2.value(0)
-            elif sl == 3:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleettwolight.value(0)
+            elif startlength == 3:
                 if scr == "Sequence":
                     timeup = (time.time() + 180)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    ic2.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        ec2.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fleettwolight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C2 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 123):
                         lcd.move_to(0,0)
@@ -1336,19 +1297,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("2:01 P Up 1s   X")
                         timecurr()
-                    i3m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e3m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        threeminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 63):
                         lcd.move_to(0,0)
@@ -1375,19 +1334,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -1414,36 +1371,28 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C2 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic2.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec2.value(0)
-        if f3 == 1:
-            if sl == 5:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleettwolight.value(0)
+        if fleetthree == 1:
+            if startlength == 5:
                 if scr == "Sequence":
                     timeup = (time.time() + 300)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    i4m.value(1)
-                    i5m.value(1)
-                    ic3.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        e4m.value(1)
-                        e5m.value(1)
-                        ec3.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fourminutelight.value(1)
+                        fiveminutelight.value(1)
+                        fleetthreelight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 299):
                         lcd.move_to(0,0)
                         lcd.putstr("5:00 C2 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 243):
                         lcd.move_to(0,0)
@@ -1470,19 +1419,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("4:01 P Up 1s   X")
                         timecurr()
-                    i5m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e5m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        fiveminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 239):
                         lcd.move_to(0,0)
                         lcd.putstr("4:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 180):
                         lcd.move_to(0,0)
@@ -1497,9 +1444,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i4m.value(0)
-                    if el == 1:
-                        e4m.value(0)
+                    if externallights == 1:
+                        fourminutelight.value(0)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C3 P      X")
@@ -1518,9 +1464,8 @@ while True:
                         if scr == "Race":
                             break
                 if scr == "Sequence":
-                    i3m.value(0)
-                    if el == 1:
-                        e3m.value(0)
+                    if externallights == 1:
+                        threeminutelight.value(0)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 C3 P      X")
@@ -1551,19 +1496,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -1590,31 +1533,25 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C3 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic3.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec3.value(0)
-            if sl == 3:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleetthreelight.value(0)
+            if startlength == 3:
                 if scr == "Sequence":
                     timeup = (time.time() + 180)
-                    i1m.value(1)
-                    i2m.value(1)
-                    i3m.value(1)
-                    ic3.value(1)
-                    if el == 1:
-                        e1m.value(1)
-                        e2m.value(1)
-                        e3m.value(1)
-                        ec3.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        oneminutelight.value(1)
+                        twominutelight.value(1)
+                        threeminutelight.value(1)
+                        fleetthreelight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 179):
                         lcd.move_to(0,0)
                         lcd.putstr("3:00 C3 Up     X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 123):
                         lcd.move_to(0,0)
@@ -1641,19 +1578,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("2:01 P Up 1s   X")
                         timecurr()
-                    i3m.value(0)
-                    ipf.value(1)
-                    if el == 1:
-                        e3m.value(0)
-                        epf.value(1)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        threeminutelight.value(0)
+                        plight.value(1)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 119):
                         lcd.move_to(0,0)
                         lcd.putstr("2:00 P Up      X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 63):
                         lcd.move_to(0,0)
@@ -1680,19 +1615,17 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("1:01 P Dn 1s   X")
                         timecurr()
-                    i2m.value(0)
-                    ipf.value(0)
-                    if el == 1:
-                        e2m.value(0)
-                        epf.value(0)
-                    if eh == 1:
-                        ehn.value(1)
+                    if externallights == 1:
+                        twominutelight.value(0)
+                        plight.value(0)
+                    if externalhorn == 1:
+                        horn.value(1)
                     while time.time() < (timeup - 58):
                         lcd.move_to(0,0)
                         lcd.putstr("1:00 P Down    X")
                         timecurr()
-                    if eh == 1:
-                        ehn.value(0)
+                    if externalhorn == 1:
+                        horn.value(0)
                 if scr == "Sequence":
                     while time.time() < (timeup - 3):
                         lcd.move_to(0,0)
@@ -1719,26 +1652,24 @@ while True:
                         lcd.move_to(0,0)
                         lcd.putstr("0:01 C3 Dn 1s  X")
                         timecurr()
-                    i1m.value(0)
-                    ic3.value(0)
-                    if el == 1:
-                        e1m.value(0)
-                        ec3.value(0)
-        if rs == 0:
-            if f1 == 0:
-                if f2 == 0:
-                    if f3 == 0:
+                    if externallights == 1:
+                        oneminutelight.value(0)
+                        fleetthreelight.value(0)
+        if rollingstart == 0:
+            if fleetone == 0:
+                if fleettwo == 0:
+                    if fleetthree == 0:
                         scr = "Race"
             if scr == "Sequence":
                 lcd.move_to(0,0)
-                if eh == 1:
-                    ehn.value(1)
+                if externalhorn == 1:
+                    horn.value(1)
                 while time.time() == timeup:
                     lcd.putstr("0:00           X")
                     timecurr()
                 time.sleep(1)
-                if eh == 1:
-                    ehn.value(0)
+                if externalhorn == 1:
+                    horn.value(0)
                 scr = "Race"
     while scr == "ABD":
         lcd.move_to(0,0)
@@ -1747,400 +1678,387 @@ while True:
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= N,H     AP =>")
-        time.sleep(0.2)
-        if bru.value() == True:
+        time.sleep(0.3)
+        if uprightbutton.value() == True:
             scr = "Race"
-        elif brd.value() == True:
+        elif lowrightbutton.value() == True:
             scr = "AP"
             lcd.move_to(0,1)
             lcd.putstr("AP Going Up     ")
-            if eh == 1:
-                ehn.value(1)
+            if externalhorn == 1:
+                horn.value(1)
                 time.sleep(1)
-                ehn.value(0)
+                horn.value(0)
                 time.sleep(0.5)
-                ehn.value(1)
+                horn.value(1)
                 time.sleep(1)
-                ehn.value(0)
-        elif bld.value() == True:
+                horn.value(0)
+        elif lowleftbutton.value() == True:
             scr = "NHA"
-            ehn.value(1)
+            horn.value(1)
             time.sleep(1)
-            ehn.value(0)
+            horn.value(0)
             time.sleep(0.5)
-            ehn.value(1)
+            horn.value(1)
             time.sleep(1)
-            ehn.value(0)
+            horn.value(0)
             time.sleep(0.5)
-            ehn.value(1)
+            horn.value(1)
             time.sleep(1)
-            ehn.value(0)
+            horn.value(0)
     lcd.clear()
     while scr == "AP":
         lcd.move_to(0,0)
         lcd.putstr("AP Up")
         lcd.move_to(0,1)
         lcd.putstr("<= Horn  Down =>")
-        e1m.value(1)
-        e3m.value(1)
-        e5m.value(1)
-        epf.value(1)
-        ec1.value(1)
-        i1m.value(1)
-        i3m.value(1)
-        i5m.value(1)
-        ipf.value(1)
-        ic1.value(1)
-        time.sleep(0.2)
-        while bld.value() == 1:
-            ehn.value(1)
+        oneminutelight.value(1)
+        threeminutelight.value(1)
+        fiveminutelight.value(1)
+        plight.value(1)
+        fleetonelight.value(1)
+        time.sleep(0.3)
+        while lowleftbutton.value() == 1:
+            horn.value(1)
             bz()
-            ehn.value(0)
-        if brd.value() == 1:
+            horn.value(0)
+        if lowrightbutton.value() == 1:
             scr = "ABD"
             lcd.move_to(0,0)
             lcd.putstr("AP Down")
-            if eh == 1:
-                ehn.value(1)
-            e1m.value(0)
-            e3m.value(0)
-            e5m.value(0)
-            epf.value(0)
-            ec1.value(0)
-            i1m.value(0)
-            i3m.value(0)
-            i5m.value(0)
-            ipf.value(0)
-            ic1.value(0)
-            if eh == 1:
+            if externalhorn == 1:
+                horn.value(1)
+            oneminutelight.value(0)
+            threeminutelight.value(0)
+            fiveminutelight.value(0)
+            plight.value(0)
+            fleetonelight.value(0)
+            if externalhorn == 1:
                 time.sleep(0.5)
-                ehn.value(0)
+                horn.value(0)
     lcd.clear()
     while scr == "NHA":
         lcd.move_to(0,0)
         lcd.putstr("N or H Up")
         lcd.move_to(0,1)
         lcd.putstr("<= Horn  Down =>")
-        e1m.value(1)
-        e3m.value(1)
-        e5m.value(1)
-        epf.value(1)
-        ec1.value(1)
-        ec2.value(1)
-        i1m.value(1)
-        i3m.value(1)
-        i5m.value(1)
-        ipf.value(1)
-        ic1.value(1)
-        ic2.value(1)
-        time.sleep(0.2)
-        while bld.value() == 1:
-            ehn.value(1)
+        oneminutelight.value(1)
+        threeminutelight.value(1)
+        fiveminutelight.value(1)
+        plight.value(1)
+        fleetonelight.value(1)
+        fleettwolight.value(1)
+        time.sleep(0.3)
+        while lowleftbutton.value() == 1:
+            horn.value(1)
             bz()
-            ehn.value(0)
-        if brd.value() == 1:
+            horn.value(0)
+        if lowrightbutton.value() == 1:
             scr = "ABD"
-            e1m.value(0)
-            e3m.value(0)
-            e5m.value(0)
-            epf.value(0)
-            ec1.value(0)
-            ec2.value(0)
-            i1m.value(0)
-            i3m.value(0)
-            i5m.value(0)
-            ipf.value(0)
-            ic1.value(0)
-            ic2.value(0)
+            oneminutelight.value(0)
+            threeminutelight.value(0)
+            fiveminutelight.value(0)
+            plight.value(0)
+            fleetonelight.value(0)
+            fleettwolight.value(0)
     lcd.clear()
     while scr == "Config1":
         lcd.move_to(0,0)
-        if sl == 5:
+        if startlength == 5:
             lcd.putstr("StartLen = 5m")
-        elif sl == 3:
+        elif startlength == 3:
             lcd.putstr("StartLen = 3m")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if sl == 5:
-                slo = open("sl", "w")
-                sl = 3
-                slo.write(str(sl))
-                slo.close()
-            elif sl == 3:
-                slo = open("sl", "w")
-                sl = 5
-                slo.write(str(sl))
-                slo.close()
-        elif brd.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if startlength == 5:
+                startlengthopen = open("startlength", "w")
+                startlength = 3
+                startlengthopen.write(str(startlength))
+                startlengthopen.close()
+            elif startlength == 3:
+                startlengthopen = open("startlength", "w")
+                startlength = 5
+                startlengthopen.write(str(startlength))
+                startlengthopen.close()
+        elif lowrightbutton.value() == True:
             scr = "Config2"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config2":
         lcd.move_to(0,0)
-        if rs == 0:
+        if rollingstart == 0:
             lcd.putstr("RollStrt = No ")
-        elif rs == 1:
+        elif rollingstart == 1:
             lcd.putstr("RollStrt = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if rs == 0:
-                rso = open("rs1", "w")
-                rs = 1
-                rso.write(str(sl))
-                rso.close()
-            elif rs == 1:
-                rso = open("rs1", "w")
-                rs = 0
-                rso.write(str(rs))
-                rso.close()
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if rollingstart == 0:
+                rollingstartopen = open("rollingstart1", "w")
+                rollingstart = 1
+                rollingstartopen.write(str(startlength))
+                rollingstartopen.close()
+            elif rollingstart == 1:
+                rollingstartopen = open("rollingstart1", "w")
+                rollingstart = 0
+                rollingstartopen.write(str(rollingstart))
+                rollingstartopen.close()
             else:
-                rso = open("rs1", "w")
-                rs = 0
-                rso.write(str(rs))
-                rso.close()
-        elif brd.value() == True:
+                rollingstartopen = open("rollingstart1", "w")
+                rollingstart = 0
+                rollingstartopen.write(str(rollingstart))
+                rollingstartopen.close()
+        elif lowrightbutton.value() == True:
             scr = "Config3"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config3":
         lcd.move_to(0,0)
-        if f1 == 0:
+        if fleetone == 0:
             lcd.putstr("Fleet1 = No ")
-        elif f1 == 1:
+        elif fleetone == 1:
             lcd.putstr("Fleet1 = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if f1 == 0:
-                f1o = open("f1", "w")
-                f1 = 1
-                f1o.write(str(f1))
-                f1o.close()
-            elif f1 == 1:
-                f1o = open("f1", "w")
-                f1 = 0
-                f1o.write(str(f1))
-                f1o.close()
-        elif brd.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if fleetone == 0:
+                fleetoneopen = open("fleetone", "w")
+                fleetone = 1
+                fleetoneopen.write(str(fleetone))
+                fleetoneopen.close()
+            elif fleetone == 1:
+                fleetoneopen = open("fleetone", "w")
+                fleetone = 0
+                fleetoneopen.write(str(fleetone))
+                fleetoneopen.close()
+        elif lowrightbutton.value() == True:
             scr = "Config4"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config4":
         lcd.move_to(0,0)
-        if f2 == 0:
+        if fleettwo == 0:
             lcd.putstr("Fleet2 = No ")
-        elif f2 == 1:
+        elif fleettwo == 1:
             lcd.putstr("Fleet2 = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if f2 == 0:
-                f2o = open("f2", "w")
-                f2 = 1
-                f2o.write(str(f2))
-                f2o.close()
-            elif f2 == 1:
-                f2o = open("f2", "w")
-                f2 = 0
-                f2o.write(str(f2))
-                f2o.close()
-        elif brd.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if fleettwo == 0:
+                fleettwoopen = open("fleettwo", "w")
+                fleettwo = 1
+                fleettwoopen.write(str(fleettwo))
+                fleettwoopen.close()
+            elif fleettwo == 1:
+                fleettwoopen = open("fleettwo", "w")
+                fleettwo = 0
+                fleettwoopen.write(str(fleettwo))
+                fleettwoopen.close()
+        elif lowrightbutton.value() == True:
             scr = "Config5"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config5":
         lcd.move_to(0,0)
-        if f3 == 0:
+        if fleetthree == 0:
             lcd.putstr("Fleet3 = No ")
-        elif f3 == 1:
+        elif fleetthree == 1:
             lcd.putstr("Fleet3 = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if f3 == 0:
-                f3o = open("f3", "w")
-                f3 = 1
-                f3o.write(str(f3))
-                f3o.close()
-            elif f3 == 1:
-                f3o = open("f3", "w")
-                f3 = 0
-                f3o.write(str(f3))
-                f3o.close()
-        elif brd.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if fleetthree == 0:
+                fleetthreeopen = open("fleetthree", "w")
+                fleetthree = 1
+                fleetthreeopen.write(str(fleetthree))
+                fleetthreeopen.close()
+            elif fleetthree == 1:
+                fleetthreeopen = open("fleetthree", "w")
+                fleetthree = 0
+                fleetthreeopen.write(str(fleetthree))
+                fleetthreeopen.close()
+        elif lowrightbutton.value() == True:
             scr = "Config6"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
     while scr == "Config6":
         lcd.move_to(0,0)
-        if el == 0:
+        if waitbeforestart == 0:
+            lcd.putstr("StrOnMin = No ")
+        elif waitbeforestart == 1:
+            lcd.putstr("StrOnMin = Yes ")
+        lcd.move_to(15,0)
+        lcd.putchar("X")
+        lcd.move_to(0,1)
+        lcd.putstr("<= Set   Next =>")
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if waitbeforestart == 0:
+                waitbeforestartopen = open("waitbeforestart", "w")
+                waitbeforestart = 1
+                waitbeforestartopen.write(str(waitbeforestart))
+                waitbeforestartopen.close()
+            elif waitbeforestart == 1:
+                waitbeforestartopen = open("waitbeforestart", "w")
+                waitbeforestart = 0
+                waitbeforestartopen.write(str(waitbeforestart))
+                waitbeforestartopen.close()
+        elif lowrightbutton.value() == True:
+            scr = "Config7"
+        elif uprightbutton.value() == True:
+            scr = "Home"
+    lcd.clear()
+    while scr == "Config7":
+        lcd.move_to(0,0)
+        if externallights == 0:
             lcd.putstr("ExtLight = No ")
-        elif el == 1:
+        elif externallights == 1:
             lcd.putstr("ExtLight = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if el == 0:
-                elo = open("el", "w")
-                el = 1
-                elo.write(str(el))
-                elo.close()
-            elif el == 1:
-                elo = open("el", "w")
-                el = 0
-                elo.write(str(el))
-                elo.close()
-        elif brd.value() == True:
-            scr = "Config7"
-        elif bru.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if externallights == 0:
+                externallightsopen = open("externallights", "w")
+                externallights = 1
+                externallightsopen.write(str(externallights))
+                externallightsopen.close()
+            elif externallights == 1:
+                externallightsopen = open("externallights", "w")
+                externallights = 0
+                externallightsopen.write(str(externallights))
+                externallightsopen.close()
+        elif lowrightbutton.value() == True:
+            scr = "Config8"
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
-    while scr == "Config7":
+    while scr == "Config8":
         lcd.move_to(0,0)
-        if eh == 0:
+        if externalhorn == 0:
             lcd.putstr("ExtHorn = No ")
-        elif eh == 1:
+        elif externalhorn == 1:
             lcd.putstr("ExtHorn = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if eh == 0:
-                eho = open("eh", "w")
-                eh = 1
-                eho.write(str(eh))
-                eho.close()
-            elif eh == 1:
-                eho = open("eh", "w")
-                eh = 0
-                eho.write(str(eh))
-                eho.close()
-        elif brd.value() == True:
-            scr = "Config8"
-        elif bru.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if externalhorn == 0:
+                externalhornopen = open("externalhorn", "w")
+                externalhorn = 1
+                externalhornopen.write(str(externalhorn))
+                externalhornopen.close()
+            elif externalhorn == 1:
+                externalhornopen = open("externalhorn", "w")
+                externalhorn = 0
+                externalhornopen.write(str(externalhorn))
+                externalhornopen.close()
+        elif lowrightbutton.value() == True:
+            scr = "Config9"
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
-    while scr == "Config8":
+    while scr == "Config9":
         lcd.move_to(0,0)
-        if sil == 0:
+        if silent == 0:
             lcd.putstr("Silent = No ")
-        elif sil == 1:
+        elif silent == 1:
             lcd.putstr("Silent = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if sil == 0:
-                silo = open("sil", "w")
-                sil = 1
-                silo.write(str(sil))
-                silo.close()
-            elif sil == 1:
-                silo = open("sil", "w")
-                sil = 0
-                silo.write(str(sil))
-                silo.close()
-        elif brd.value() == True:
-            scr = "Config9"
-        elif bru.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if silent == 0:
+                silentopen = open("silent", "w")
+                silent = 1
+                silentopen.write(str(silent))
+                silentopen.close()
+            elif silent == 1:
+                silentopen = open("silent", "w")
+                silent = 0
+                silentopen.write(str(silent))
+                silentopen.close()
+        elif lowrightbutton.value() == True:
+            scr = "Config10"
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
-    while scr == "Config9":
+    while scr == "Config10":
         lcd.move_to(0,0)
-        if lte == 0:
-            lcd.putstr("LTest = No ")
-        elif lte == 1:
-            lcd.putstr("LTest = Yes")
+        if lighttest == 0:
+            lcd.putstr("LightTest = No ")
+        elif lighttest == 1:
+            lcd.putstr("LightTest = Yes")
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("<= Set   Next =>")
-        time.sleep(0.2)
-        if bld.value() == True:
-            if lte == 0:
-                lte = 1
-                e1m.value(1)
-                e2m.value(1)
-                e3m.value(1)
-                e4m.value(1)
-                e5m.value(1)
-                ec1.value(1)
-                ec2.value(1)
-                ec3.value(1)
-                epf.value(1)
-                i1m.value(1)
-                i2m.value(1)
-                i3m.value(1)
-                i4m.value(1)
-                i5m.value(1)
-                ic1.value(1)
-                ic2.value(1)
-                ic3.value(1)
-                ipf.value(1)
-            elif lte == 1:
-                lte = 0
-                e1m.value(0)
-                e2m.value(0)
-                e3m.value(0)
-                e4m.value(0)
-                e5m.value(0)
-                ec1.value(0)
-                ec2.value(0)
-                ec3.value(0)
-                epf.value(0)
-                i1m.value(0)
-                i2m.value(0)
-                i3m.value(0)
-                i4m.value(0)
-                i5m.value(0)
-                ic1.value(0)
-                ic2.value(0)
-                ic3.value(0)
-                ipf.value(0)
-        elif brd.value() == True:
-            scr = "Config10"
-        elif bru.value() == True:
+        time.sleep(0.3)
+        if lowleftbutton.value() == True:
+            if lighttest == 0:
+                lighttest = 1
+                oneminutelight.value(1)
+                twominutelight.value(1)
+                threeminutelight.value(1)
+                fourminutelight.value(1)
+                fiveminutelight.value(1)
+                fleetonelight.value(1)
+                fleettwolight.value(1)
+                fleetthreelight.value(1)
+                plight.value(1)
+            elif lighttest == 1:
+                lighttest = 0
+                oneminutelight.value(0)
+                twominutelight.value(0)
+                threeminutelight.value(0)
+                fourminutelight.value(0)
+                fiveminutelight.value(0)
+                fleetonelight.value(0)
+                fleettwolight.value(0)
+                fleetthreelight.value(0)
+                plight.value(0)
+            time.sleep(1)
+        elif lowrightbutton.value() == True:
+            scr = "Config11"
+        elif uprightbutton.value() == True:
             scr = "Home"
     lcd.clear()
-    while scr == "Config10":
+    while scr == "Config11":
         lcd.move_to(0,0)
         lcd.putstr("OSVer = " + ver)
         lcd.move_to(15,0)
         lcd.putchar("X")
         lcd.move_to(0,1)
         lcd.putstr("         Next =>")
-        time.sleep(0.2)
-        if brd.value() == True:
+        time.sleep(0.3)
+        if lowrightbutton.value() == True:
             scr = "Config1"
-        elif bru.value() == True:
+        elif uprightbutton.value() == True:
             scr = "Home"
-
